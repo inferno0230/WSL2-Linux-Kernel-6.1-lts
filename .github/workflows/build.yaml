@@ -1,0 +1,27 @@
+name: WSL2 Kernel
+
+on:
+  push:
+    branches:
+      - linux-msft-wsl-6.6.y
+  workflow_dispatch:
+
+jobs:
+  WSL2_Kernel_Build:
+    name: Build kernel
+    runs-on: self-hosted
+    steps:
+    
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+
+    - name: Build Kernel
+      run: |
+        ./build.sh
+        echo "RELEASE_NAME=WSL2-Linux-v6.6.$(grep "^SUBLEVEL =" Makefile | awk '{print $3}')-$(date +"%Y%m%d")" >> $GITHUB_ENV
+
+    - name: Creating release
+      run: |
+        gh release create $RELEASE_NAME --title "$RELEASE_NAME" --notes "" out/${RELEASE_NAME}.zip
